@@ -1,0 +1,10 @@
+# Linux (Ubuntu) - Actualizar e instalar dependencias
+sudo apt update && sudo apt upgrade -y
+
+# Descargar e instalar Webmin
+wget https://www.webmin.com/download/deb/webmin-current.deb
+sudo dpkg -i webmin-current.deb
+sudo apt --fix-broken install -y
+
+# Acceso web
+# https://<IP-SERVER>:10000
