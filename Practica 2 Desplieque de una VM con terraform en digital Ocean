@@ -1,0 +1,32 @@
+# 1. Instalar dependencias y Terraform en VM Server
+sudo apt update && sudo apt install -y wget unzip
+wget https://releases.hashicorp.com/terraform/1.9.8/terraform_1.9.8_linux_amd64.zip
+unzip terraform_1.9.8_linux_amd64.zip
+sudo mv terraform /usr/local/bin/
+terraform -v   # Verificar versión
+
+# 2. Crear directorio del proyecto y entrar
+mkdir terraform_do && cd terraform_do
+
+# 3. Crear archivo main.tf (plantilla)
+nano main.tf
+# --- Contenido ---
+provider "digitalocean" {
+  token = "TOKEN_API_DIGITALOCEAN"
+}
+
+resource "digitalocean_droplet" "os3vm" {
+  image  = "ubuntu-22-04-x64"
+  name   = "OS3vm"
+  region = "nyc1"
+  size   = "s-1vcpu-1gb"
+  ssh_keys = ["ID_LLAVE_PUBLICA"]
+}
+
+# 4. Inicializar y aplicar Terraform
+terraform init
+terraform plan
+terraform apply -auto-approve
+
+# 5. Validar la creación de la VM
+ssh root@<IP_PUBLICA_VM>    
