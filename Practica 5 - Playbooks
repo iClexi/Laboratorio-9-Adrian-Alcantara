@@ -1,0 +1,36 @@
+# --- 1. Playbook para instalar Notepad++ en Windows (ansible2) ---
+nano instalar_notepad_win.yml
+# --- Contenido ---
+- name: Instalar Notepad++ en Windows
+  hosts: win
+  tasks:
+    - name: Instalar Notepad++ vía Chocolatey
+      win_chocolatey:
+        name: notepadplusplus
+        state: present
+
+# Ejecutar el playbook
+ansible-playbook instalar_notepad_win.yml
+
+
+# --- 2. Playbook para instalar NGINX en Linux (ansible1) ---
+nano instalar_nginx_linux.yml
+# --- Contenido ---
+- name: Instalar y habilitar NGINX en Linux
+  hosts: linux
+  become: yes
+  tasks:
+    - name: Instalar NGINX
+      apt:
+        name: nginx
+        state: present
+        update_cache: yes
+
+    - name: Iniciar y habilitar servicio NGINX
+      service:
+        name: nginx
+        state: started
+        enabled: yes
+
+# Ejecutar el playbook
+ansible-playbook instalar_nginx_linux.yml
