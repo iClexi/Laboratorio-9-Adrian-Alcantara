@@ -1,0 +1,6 @@
+# --- 1. Copiar archivo desde Linux (Control Node) a Windows (clientwin) ---
+# Copia archivo1.txt del escritorio de ansible2 a Documentos de Windows
+ansible winclient -m win_copy -a "src=C:\Users\ansible\Desktop\archivo1.txt dest=C:\Users\ansible\Documents\archivo1.txt remote_src=yes"
+
+# --- 2. Reiniciar la VM ansible1 (Linux cliente) ---
+ansible ansible01 -m reboot --become
