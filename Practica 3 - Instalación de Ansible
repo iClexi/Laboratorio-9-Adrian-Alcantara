@@ -1,0 +1,36 @@
+# --- 1. Instalar Ansible en la VM-Server (Ubuntu) ---
+sudo apt update && sudo apt install -y ansible sshpass
+ansible --version   # Verificar instalación
+
+# --- 2. Crear usuario ansible en Linux (server y cliente) ---
+sudo adduser ansible
+sudo usermod -aG sudo ansible
+
+# --- 3. Generar llaves SSH sin contraseña (en el servidor) ---
+su - ansible
+ssh-keygen -t rsa -b 4096   # Enter en todas las opciones
+
+# --- 4. Copiar llave al cliente Linux ---
+ssh-copy-id ansible@<IP_CLIENTE_LINUX>
+
+# --- 5. Configurar cliente Windows (PowerShell como Administrador) ---
+net user ansible P@ssw0rd /add
+net localgroup Administrators ansible /add
+
+# Habilitar WinRM para conexión remota
+winrm quickconfig
+Enable-PSRemoting -Force
+
+# --- 6. Crear inventario de Ansible ---
+sudo nano /etc/ansible/hosts
+# --- Contenido completo ---
+[linux]
+client01 ansible_host=198.211.110.205 ansible_user=ansible ansible_ssh_private_key_file=/home/ansible/.ssh/id_rsa
+
+[win]
+clientwin ansible_host=10.0.0.124 ansible_user=ansible ansible_password=Ansible123 ansible_connection=winrm ansible_winrm_transport=basic ansible_winrm_scheme=http ansible_winrm_port=5985 ansible_winrm_server_cert_validation=ignore
+
+# --- 7. Probar conexión con módulo ping ---
+ansible all -m ping         # Prueba Linux
+ansible linux -m ping       # Grupo Linux
+ansible win -m win_ping     # Grupo Windows
