@@ -1,36 +1,46 @@
 # --- 1. Playbook para instalar Notepad++ en Windows (ansible2) ---
+# Este playbook usa el módulo win_chocolatey para instalar Notepad++.
+# Chocolatey es un gestor de paquetes para Windows (como apt en Linux).
 nano instalar_notepad_win.yml
 # --- Contenido ---
 - name: Instalar Notepad++ en Windows
-  hosts: win
+  hosts: win                      # Grupo definido en /etc/ansible/hosts
   tasks:
     - name: Instalar Notepad++ vía Chocolatey
       win_chocolatey:
         name: notepadplusplus
-        state: present
+        state: present             # "present" = instalar si no está
+
+# Verificar si Chocolatey esta instalado en Windows
+Set-ExecutionPolicy Bypass -Scope Process -Force; `
+[System.Net.ServicePointManager]::SecurityProtocol = `
+[System.Net.ServicePointManager]::SecurityProtocol -bor 3072; `
+iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+
 
 # Ejecutar el playbook
 ansible-playbook instalar_notepad_win.yml
 
 
 # --- 2. Playbook para instalar NGINX en Linux (ansible1) ---
+# Este playbook instala y habilita NGINX en hosts Linux.
 nano instalar_nginx_linux.yml
 # --- Contenido ---
 - name: Instalar y habilitar NGINX en Linux
-  hosts: linux
-  become: yes
+  hosts: linux                     # Grupo definido en /etc/ansible/hosts
+  become: yes                      # Ejecuta con privilegios sudo
   tasks:
     - name: Instalar NGINX
       apt:
         name: nginx
-        state: present
-        update_cache: yes
+        state: present              # "present" = instalar si no está
+        update_cache: yes           # Actualiza lista de paquetes antes
 
     - name: Iniciar y habilitar servicio NGINX
       service:
         name: nginx
-        state: started
-        enabled: yes
+        state: started              # Inicia el servicio
+        enabled: yes                # Lo habilita en el arranque
 
 # Ejecutar el playbook
 ansible-playbook instalar_nginx_linux.yml
