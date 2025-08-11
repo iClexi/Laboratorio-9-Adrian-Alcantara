@@ -1,32 +1,37 @@
-# 1. Instalar dependencias y Terraform en VM Server
+# ===============================================
+# PRÁCTICA: CREAR VM EN DIGITALOCEAN CON TERRAFORM
+# ===============================================
+
+# 1. Instalar dependencias y Terraform en la VM Server
 sudo apt update && sudo apt install -y wget unzip
 wget https://releases.hashicorp.com/terraform/1.9.8/terraform_1.9.8_linux_amd64.zip
 unzip terraform_1.9.8_linux_amd64.zip
 sudo mv terraform /usr/local/bin/
-terraform -v   # Verificar versión
+terraform -v   # Verifica que Terraform está instalado
 
 # 2. Crear directorio del proyecto y entrar
-mkdir terraform_do && cd terraform_do
+mkdir terraform_do
+cd terraform_do
 
-# 3. Crear archivo main.tf (plantilla)
-nano main.tf
-# --- Contenido ---
-provider "digitalocean" {
-  token = "TOKEN_API_DIGITALOCEAN"
-}
+# 3. Crear archivo main.tf con nano (plantilla de configuración)
+sudo nano main.tf
+# Contenido:
+# provider "digitalocean" {
+#   token = "TOKEN_API_DIGITALOCEAN"        # Pega aquí tu token de API de DigitalOcean
+# }
+#
+# resource "digitalocean_droplet" "os3vm" {
+#   image  = "ubuntu-22-04-x64"             # Imagen del SO
+#   name   = "OS3vm"                        # Nombre de la máquina
+#   region = "nyc1"                         # Región (puedes cambiarla)
+#   size   = "s-1vcpu-1gb"                  # Tamaño de la máquina
+#   ssh_keys = ["ID_LLAVE_PUBLICA"]         # ID de tu llave SSH en DigitalOcean
+# }
 
-resource "digitalocean_droplet" "os3vm" {
-  image  = "ubuntu-22-04-x64"
-  name   = "OS3vm"
-  region = "nyc1"
-  size   = "s-1vcpu-1gb"
-  ssh_keys = ["ID_LLAVE_PUBLICA"]
-}
+# 4. Inicializar y desplegar con Terraform
+terraform init           # Descarga los plugins necesarios
+terraform plan           # Muestra lo que va a crear
+terraform apply -auto-approve  # Crea la VM automáticamente
 
-# 4. Inicializar y aplicar Terraform
-terraform init
-terraform plan
-terraform apply -auto-approve
-
-# 5. Validar la creación de la VM
-ssh root@<IP_PUBLICA_VM>    
+# 5. Conectarse a la máquina para validar
+ssh root@<IP_PUBLICA_VM>
