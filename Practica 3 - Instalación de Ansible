@@ -1,36 +1,107 @@
-# --- 1. Instalar Ansible en la VM-Server (Ubuntu) ---
+# ===============================================
+# PRÁCTICA: INSTALACIÓN Y CONFIGURACIÓN DE ANSIBLE
+# ===============================================
+
+# --- 1. Instalar Ansible en la VM Server (Ubuntu) ---
 sudo apt update && sudo apt install -y ansible sshpass
-ansible --version   # Verificar instalación
+ansible --version   # Verifica que Ansible está instalado correctamente
 
 # --- 2. Crear usuario ansible en Linux (server y cliente) ---
-sudo adduser ansible
-sudo usermod -aG sudo ansible
+sudo adduser ansible                # Crea el usuario
+sudo usermod -aG sudo ansible       # Lo añade al grupo sudo (permisos de admin)
 
 # --- 3. Generar llaves SSH sin contraseña (en el servidor) ---
 su - ansible
-ssh-keygen -t rsa -b 4096   # Enter en todas las opciones
+ssh-keygen -t rsa -b 4096           # Pulsar Enter en todas las opciones para dejar por defecto
 
-# --- 4. Copiar llave al cliente Linux ---
+# --- 4. Copiar llave pública al cliente Linux ---
 ssh-copy-id ansible@<IP_CLIENTE_LINUX>
 
-# --- 5. Configurar cliente Windows (PowerShell como Administrador) ---
+# --- 5. Configurar cliente Windows ---
+# En PowerShell como Administrador, ejecutar:
 net user ansible P@ssw0rd /add
 net localgroup Administrators ansible /add
 
-# Habilitar WinRM para conexión remota
+# Habilitar WinRM para conexión remota:
 winrm quickconfig
 Enable-PSRemoting -Force
 
-# --- 6. Crear inventario de Ansible ---
+# --- 6. Crear archivo de inventario para Ansible ---
 sudo nano /etc/ansible/hosts
-# --- Contenido completo ---
-[linux]
-client01 ansible_host=198.211.110.205 ansible_user=ansible ansible_ssh_private_key_file=/home/ansible/.ssh/id_rsa
-
-[win]
-clientwin ansible_host=10.0.0.124 ansible_user=ansible ansible_password=Ansible123 ansible_connection=winrm ansible_winrm_transport=basic ansible_winrm_scheme=http ansible_winrm_port=5985 ansible_winrm_server_cert_validation=ignore
+# Contenido:
+# [linux]
+# client01 ansible_host=198.211.110.205 ansible_user=ansible ansible_ssh_private_key_file=/home/ansible/.ssh/id_rsa
+#
+# [win]
+# clientwin ansible_host=10.0.0.124 ansible_user=ansible ansible_password=Ansible123 \
+# ansible_connection=winrm ansible_winrm_transport=basic ansible_winrm_scheme=http \
+# ansible_winrm_port=5985 ansible_winrm_server_cert_validation=ignore
 
 # --- 7. Probar conexión con módulo ping ---
-ansible all -m ping         # Prueba Linux
-ansible linux -m ping       # Grupo Linux
-ansible win -m win_ping     # Grupo Windows
+ansible all -m ping     # Prueba a todos los hosts
+ansible linux -m ping   # Solo grupo Linux
+ansible win -m win_ping # Solo grupo Windows
+
+
+# ===============================================
+# POSIBLE TROUBLESHOOTING EN WINDOWS
+# ===============================================
+
+# 1) Contraseña de usuario ansible no cumple políticas:
+#    - Windows requiere contraseñas con mínimo 8 caracteres, mayúscula, minúscula, número y símbolo.
+#    - Ejemplo válido: Ansible123!
+
+# 2) Firewall de Windows bloqueando WinRM:
+#    - Abrir PowerShell como Administrador y ejecutar:
+#      netsh advfirewall firewall add rule name="WinRM" dir=in action=allow protocol=TCP localport=5985
+
+# 3) WinRM no habilitado:
+#    - Ejecutar:
+#      winrm quickconfig
+#      Enable-PSRemoting -Force
+
+# 4) Servicio WinRM detenido:
+#    - Iniciar servicio:
+#      Start-Service WinRM
+#    - Configurarlo para iniciar siempre:
+#      Set-Service WinRM -StartupType Automatic
+
+# 5) Nombre de host incorrecto o IP equivocada en /etc/ansible/hosts:
+#    - Verificar con:
+#      Test-Connection <IP_SERVER_ANSIBLE>  (desde Windows)
+#      ping <IP_CLIENTE_WINDOWS>            (desde Linux)
+
+# 6) Errores de credenciales:
+#    - Revisar que usuario y contraseña en el inventario Ansible sean correctos.
+#    - Asegurarse que el usuario ansible está en el grupo Administradores de Windows:
+#      net localgroup Administrators
+
+
+# ===============================================
+# CONEXIÓN ANSIBLE → WINDOWS SIN WINRM (VÍA SSH)
+# ===============================================
+
+# 1) Instalar servidor OpenSSH en Windows:
+#    - Abrir PowerShell como Administrador y ejecutar:
+#      Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0
+#      Start-Service sshd
+#      Set-Service -Name sshd -StartupType 'Automatic'
+
+# 2) Configurar Firewall para puerto 22:
+#    netsh advfirewall firewall add rule name="OpenSSH" dir=in action=allow protocol=TCP localport=22
+
+# 3) Crear usuario ansible con permisos de admin:
+#    net user ansible P@ssw0rd /add
+#    net localgroup Administrators ansible /add
+
+# 4) Copiar llave pública desde el servidor Linux al Windows:
+#    ssh-copy-id ansible@<IP_CLIENTE_WINDOWS>
+
+# 5) Configurar inventario de Ansible para usar SSH en Windows:
+# sudo nano /etc/ansible/hosts
+# Contenido:
+# [win]
+# clientwin ansible_host=10.0.0.124 ansible_user=ansible ansible_ssh_private_key_file=/home/ansible/.ssh/id_rsa ansible_connection=ssh
+
+# 6) Probar conexión:
+ansible win -m ping
