@@ -4,3 +4,42 @@ ansible winclient -m win_copy -a "src=C:\Users\ansible\Desktop\archivo1.txt dest
 
 # --- 2. Reiniciar la VM ansible1 (Linux cliente) ---
 ansible ansible01 -m reboot --become
+
+# ===============================================
+# GUÍA RÁPIDA: COMANDOS AD-HOC EN ANSIBLE
+# ===============================================
+
+# Sintaxis general:
+# ansible <grupo_o_host> -m <modulo> -a "<argumentos>" [opciones]
+
+# Donde:
+#   <grupo_o_host> = Nombre del grupo o host en /etc/ansible/hosts
+#   -m <modulo>    = Módulo a usar
+#   -a "<args>"    = Parámetros del módulo
+#   --become       = Ejecutar como sudo
+#   -u <user>      = Usuario remoto
+
+# Ejemplos:
+ansible all -m ping                                   # Probar conectividad
+ansible linux -m shell -a "ls -l /etc"                # Listar /etc en Linux
+ansible win -m win_file -a "path=C:\temp\a.txt state=touch"  # Crear archivo en Windows
+ansible servidores -m reboot --become                 # Reiniciar Linux
+
+# ===============================================
+# MÓDULOS MÁS USADOS (Resumen rápido)
+# ===============================================
+
+# Archivos:
+#   file, copy, fetch, win_copy, win_file, template
+# Paquetes:
+#   apt, yum, package, win_package
+# Servicios:
+#   service, systemd, win_service
+# Comandos:
+#   command, shell, script, raw, win_shell, win_command
+# Usuarios y grupos:
+#   user, group, win_user, win_group
+# Red:
+#   uri, get_url, wait_for, ping, win_ping
+# Sistema:
+#   reboot, shutdown, win_reboot, win_shutdown
