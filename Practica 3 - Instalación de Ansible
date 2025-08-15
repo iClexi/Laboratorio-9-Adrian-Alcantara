@@ -105,3 +105,55 @@ ansible win -m win_ping # Solo grupo Windows
 
 # 6) Probar conexión:
 ansible win -m ping
+
+
+
+
+
+
+
+
+
+1️⃣ Ver perfil de red y ponerlo en Privada
+Get-NetConnectionProfile
+Set-NetConnectionProfile -Name "NOMBRE_DE_TU_RED" -NetworkCategory Private
+
+
+Cambia "NOMBRE_DE_TU_RED" por el que aparezca en el primer comando.
+
+2️⃣ Habilitar WinRM
+winrm quickconfig -q
+Enable-PSRemoting -Force
+
+3️⃣ Abrir firewall para WinRM
+# Reglas integradas
+netsh advfirewall firewall set rule group="Windows Remote Management" new enable=Yes
+
+# Regla explícita para HTTP 5985 (opcional, por si acaso)
+netsh advfirewall firewall add rule name="WinRM-5985" dir=in action=allow protocol=TCP localport=5985
+
+4️⃣ Permitir Basic + sin cifrar (solo para LAB)
+
+⚠️ Esto es inseguro para producción, úsalo solo en pruebas o en redes seguras.
+
+winrm set winrm/config/service '@{AllowUnencrypted="true"}'
+winrm set winrm/config/service/auth '@{Basic="true"}'
+
+5️⃣ Usuario local admin para Ansible
+net user ansible P@ssw0rd /add
+net localgroup "Administradores" .\ansible /add
+
+
+Asegúrate de que la contraseña cumpla la política de Windows: 8+ caracteres, mayúscula, minúscula, número y símbolo.
+
+6️⃣ Evitar problemas de UAC con cuenta local admin
+New-ItemProperty `
+ -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" `
+ -Name "LocalAccountTokenFilterPolicy" -Value 1 -PropertyType DWord -Force
+
+7️⃣ Verificar que WinRM está activo
+Get-Service WinRM
+winrm enumerate winrm/config/listener
+
+
+Debes ver un listener HTTP en el puerto 5985 y el servicio en estado Running.
