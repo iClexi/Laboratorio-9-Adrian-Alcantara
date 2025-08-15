@@ -16,17 +16,44 @@ cd terraform_do
 # 3. Crear archivo main.tf con nano (plantilla de configuración)
 sudo nano main.tf
 # Contenido:
-# provider "digitalocean" {
-#   token = "TOKEN_API_DIGITALOCEAN"        # Pega aquí tu token de API de DigitalOcean
-# }
-#
-# resource "digitalocean_droplet" "os3vm" {
-#   image  = "ubuntu-22-04-x64"             # Imagen del SO
-#   name   = "OS3vm"                        # Nombre de la máquina
-#   region = "nyc1"                         # Región (puedes cambiarla)
-#   size   = "s-1vcpu-1gb"                  # Tamaño de la máquina
-#   ssh_keys = ["ID_LLAVE_PUBLICA"]         # ID de tu llave SSH en DigitalOcean
-# }
+
+terraform {
+  required_version = ">= 1.4.0"
+
+  required_providers {
+    digitalocean = {
+      source  = "digitalocean/digitalocean"
+      version = "~> 2.0"
+    }
+  }
+}
+
+provider "digitalocean" {
+  token = var.do_token
+}
+
+variable "do_token" {
+  description = "Token de API de DigitalOcean"
+  type        = string
+}
+
+# Sube tu llave pública a DigitalOcean
+resource "digitalocean_ssh_key" "maria_key" {
+  name       = "maria_key"
+  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCTwDZ4HXNxQHQgqb8FDjHCSOs98gxzZfIfE02lNxx81DEvc8VVcajsvHxCcGMGEpZHfe+H6BLWpQmINsNTRN7vY8f043q1krFABaqdQG3s3vUMlWlZdzRs9W+xEAaEIBGFVCPNexstvbKFjB63jevmNoJoe7LqNdkykwqXaDhPlQPw45Cux7Wte4M24v+OqNempFU3iRkeMLz0DBNgFiWAs2oiU6lNWKwLPenO+njsZN225beEmKVApxBVNljpHIqsXgSH4ZI9HuRiNdaIL15B1w4q2BNwiwP/3x9WgT9F1svHf712bBRY7WfAW0vnMGo7f0wCDR1pfzRftsvCch37RRfazO59qvKpFiJW/8kks+PKEyHBKEbYMHeI8PDnynFAcP8uhuAW1Sh65S2+HnIKjazP4CnkAPPzJaaiYDkaYBoCRJkAODBtaKl6QiPvMrj8yCB9T5+rapdnBLH1PCc+mELIARb7l7u/IliIU8wtEVe2CLK54QoGaiWw4titkU0= maria@dc"
+}
+
+#CAMBIA LLAVE SSH
+
+# Crea la Droplet y usa esa llave
+resource "digitalocean_droplet" "os3vm" {
+  image    = "ubuntu-22-04-x64"
+  name     = "OS3vm"
+  region   = "nyc1"
+  size     = "s-1vcpu-1gb"
+  ssh_keys = [digitalocean_ssh_key.maria_key.id]
+}
+
 
 # 4. Inicializar y desplegar con Terraform
 terraform init           # Descarga los plugins necesarios
