@@ -42,5 +42,9 @@ nano instalar_nginx_linux.yml
         state: started              # Inicia el servicio
         enabled: yes                # Lo habilita en el arranque
 
+#DAR PERMISOS DE LECTURA A CARPETA
+sudo chown -R ansible:ansible /home/holi
+
+
 # Ejecutar el playbook
 ansible-playbook instalar_nginx_linux.yml
